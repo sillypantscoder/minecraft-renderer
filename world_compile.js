@@ -21,21 +21,27 @@
 					world[x][y][z] = 3
 				}
 				// Leaves
-				var w = 2 + Math.round(Math.random() * 3)
 				var treetop = column.height + treeHeight
-				for (var cx = x - w; cx < x + w + 1; cx++) {
-					for (var cy = treetop - (w + w); cy < treetop + w + w; cy++) {
-						for (var cz = z - w; cz < z + w + 1; cz++) {
-							// Check if in bounds
-							if (cx > 0 && cx < world_size && cy > 0 && cy < max_height && cz > 0 && cz < world_size) {
-								// Check if in sphere
-								if (Math.sqrt(Math.pow(cx - x, 2) + Math.pow(cy - treetop, 2) + Math.pow(cz - z, 2)) < w) {
-									if (world[cx][cy][cz] == 0) {
-										world[cx][cy][cz] = 4
-									}
-								}
-							}
-						}
+				var locs = [[x, treetop, z]]
+				for (var i = 0; i < 3000; i++) {
+					var last = locs[locs.length - 1]
+					last[0] += Math.round((Math.random() - 0.5) * 1.3)
+					last[1] += Math.round((Math.random() - 0.5) * 1.3)
+					last[2] += Math.round((Math.random() - 0.5) * 1.3)
+					if (last[0] < x) last[0] += Math.round(Math.random())
+					if (last[0] > x) last[0] -= Math.round(Math.random())
+					if (last[2] < z) last[2] += Math.round(Math.random())
+					if (last[2] > z) last[2] -= Math.round(Math.random())
+					if (last[1] < treetop) last[1] += Math.round(Math.random())
+					if (last[1] > treetop) last[1] -= Math.round(Math.random())
+					locs.push([last[0], last[1], last[2]])
+				}
+				for (var i = 0; i < locs.length; i++) {
+					var c = locs[i]
+					if (c[0] < 0 || c[1] < 0 || c[2] < 0) continue
+					if (c[0] >= world_size || c[1] >= max_height || c[2] >= world_size) continue
+					if (world[c[0]][c[1]][c[2]] == 0) {
+						world[c[0]][c[1]][c[2]] = 4
 					}
 				}
 			}
