@@ -1,4 +1,4 @@
-async function render(world) {
+async function render(textures, world) {
 	const scene = new THREE.Scene();
 	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
@@ -6,18 +6,32 @@ async function render(world) {
 	renderer.setSize( window.innerWidth, window.innerHeight );
 	var timeoutDelta = 5
 	var timeout = timeoutDelta
-	//func = funcs[funcs.length - 1]
+	// Block setup
+	var blocks = []
+	for (var i = 0; i < textures.length; i++) {
+		if (textures[i] == null) {
+			blocks.push(null)
+		} else {
+			blocks.push([
+				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
+				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
+				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].top)}),
+				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].bottom)}),
+				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
+				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
+			])
+		}
+	}
+	// Add the blocks
 	function addCubes() {
 		function func(x, y, z) { return world[x][y][z] }
 		for (var x = 0; x < world_size; x++) {
 			for (var y = 0; y < max_height; y++) {
 				for (var z = 0; z < world_size; z++) {
 					if (func(x, y, z)) {
-						setTimeout((x, y, z, above) => {
+						setTimeout((x, y, z, material) => {
 							var geometry = new THREE.BoxGeometry(1, 1, 1);
 							geometry.translate(x - (world_size / 2), y - (world_size / 2), z - (world_size / 2))
-							var material = block_grass_materials
-							if (above) material = block_dirt_materials
 							var color = 0xFFFFFF
 							// Add cube
 							//var material = new THREE.MeshPhongMaterial({ color: color });
@@ -27,7 +41,7 @@ async function render(world) {
 							//var material = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2 } );
 							//cube = new THREE.LineSegments( new THREE.EdgesGeometry(geometry), material );
 							//scene.add( cube );
-						}, timeout, x, y, z, func(x, y + 1, z))
+						}, timeout, x, y, z, blocks[func(x, y, z)])
 					}
 				}
 				timeout += timeoutDelta

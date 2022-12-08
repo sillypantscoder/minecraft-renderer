@@ -36,7 +36,12 @@
 			currentHeight = total / goto.length
 			var c_block = {
 				height: Math.round(currentHeight),
-				tree: Math.random() < 0.01
+				tree: null
+			}
+			if (Math.random() < 0.004) {
+				c_block.tree = {
+					height: Math.round(Math.random() * 3) + 3
+				}
 			}
 			world[world.length - 1].push(c_block)
 		}

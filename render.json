@@ -1,0 +1,23 @@
+[
+	null,
+	{
+		"top": "grass_block_top.jpeg",
+		"side": "grass_block_side.png",
+		"bottom": "dirt.png"
+	},
+	{
+		"top": "dirt.png",
+		"side": "dirt.png",
+		"bottom": "dirt.png"
+	},
+	{
+		"top": "oak_log_top.png",
+		"side": "oak_log.png",
+		"bottom": "oak_log_top.png"
+	},
+	{
+		"top": "leaves.jpeg",
+		"side": "leaves.jpeg",
+		"bottom": "leaves.jpeg"
+	}
+]

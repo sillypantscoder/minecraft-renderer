@@ -12,7 +12,7 @@ body {
 	</head>
 	<body>
 		<script>
-const world_size = 20
+const world_size = 30
 const logical_height = 4
 const max_height = 20
 const n_biomes = world_size / 2
@@ -40,9 +40,20 @@ const block_dirt_materials = [
 		<script src="world_compile.js"></script>
 		<script src="renderer.js"></script>
 		<script>
-render(window.world).then((elm) => {
-	document.body.appendChild(elm);
-});
+(() => {
+	return new Promise((resolve) => {
+		var x = new XMLHttpRequest()
+		x.open("GET", "render.json")
+		x.addEventListener("loadend", (e) => {
+			resolve(JSON.parse(e.target.responseText))
+		})
+		x.send()
+	})
+})().then((textures) => {
+	render(textures, window.world).then((elm) => {
+		document.body.appendChild(elm);
+	});
+})
 		</script>
 	</body>
 </html>
