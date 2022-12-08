@@ -56,6 +56,15 @@
 			}
 		}
 	}
+	// Draw water
+	for (var x = 0; x < world_size; x++) {
+		for (var z = 0; z < world_size; z++) {
+			var column = window.vector_level[x][z]
+			for (var y = column.height; y < water_height; y++) {
+				world[x][y][z] = 5
+			}
+		}
+	}
 	// Convert grass to dirt where needed
 	for (var x = 0; x < world_size; x++) {
 		for (var y = 0; y < max_height; y++) {

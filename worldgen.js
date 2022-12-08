@@ -38,7 +38,7 @@
 				height: Math.round(currentHeight),
 				tree: null
 			}
-			if (Math.random() < 0.004) {
+			if (Math.random() < 0.006 && currentHeight > water_height) {
 				c_block.tree = {
 					height: Math.round(Math.random() * 3) + 3
 				}

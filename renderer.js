@@ -12,13 +12,33 @@ async function render(textures, world) {
 		if (textures[i] == null) {
 			blocks.push(null)
 		} else {
+			function loadTexture(filename) {
+				if (filename[filename.length - 1] == "4") {
+					// load video texture
+					let textureVid = document.createElement("video")
+					textureVid.src = `/textures/${filename}`; // transform gif to mp4
+					textureVid.loop = true;
+					textureVid.play();
+
+
+					// Load video texture
+					let videoTexture = new THREE.VideoTexture(textureVid);
+					videoTexture.format = THREE.RGBFormat;
+					videoTexture.minFilter = THREE.NearestFilter;
+					videoTexture.maxFilter = THREE.NearestFilter;
+					videoTexture.generateMipmaps = false;
+					return new THREE.MeshPhongMaterial({ map: videoTexture/*, transparent: true, opacity: 0.6*/ })
+				} else {
+					return new THREE.MeshPhongMaterial({ map: loader.load('/textures/' + filename) })
+				}
+			}
 			blocks.push([
-				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
-				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
-				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].top)}),
-				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].bottom)}),
-				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
-				new THREE.MeshPhongMaterial({map: loader.load('/textures/' + textures[i].side)}),
+				loadTexture(textures[i].side),
+				loadTexture(textures[i].side),
+				loadTexture(textures[i].top),
+				loadTexture(textures[i].bottom),
+				loadTexture(textures[i].side),
+				loadTexture(textures[i].side)
 			])
 		}
 	}
@@ -29,9 +49,10 @@ async function render(textures, world) {
 			for (var y = 0; y < max_height; y++) {
 				for (var z = 0; z < world_size; z++) {
 					if (func(x, y, z)) {
-						setTimeout((x, y, z, material) => {
-							var geometry = new THREE.BoxGeometry(1, 1, 1);
+						setTimeout((x, y, z, material, info) => {
+							var geometry = new THREE.BoxGeometry(1, info.height, 1);
 							geometry.translate(x - (world_size / 2), y - (world_size / 2), z - (world_size / 2))
+							geometry.translate(0, (1 - info.height) / -2, 0)
 							var color = 0xFFFFFF
 							// Add cube
 							//var material = new THREE.MeshPhongMaterial({ color: color });
@@ -41,7 +62,7 @@ async function render(textures, world) {
 							//var material = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2 } );
 							//cube = new THREE.LineSegments( new THREE.EdgesGeometry(geometry), material );
 							//scene.add( cube );
-						}, timeout, x, y, z, blocks[func(x, y, z)])
+						}, timeout, x, y, z, blocks[func(x, y, z)], textures[func(x, y, z)])
 					}
 				}
 				timeout += timeoutDelta
@@ -74,12 +95,20 @@ async function render(textures, world) {
 	//controls.update() must be called after any manual changes to the camera's transform
 	//camera.position.set( 0, 20, 100 );
 	controls.update();
-	//renderer.render( scene, camera );
+	renderer.render( scene, camera );
+	var running = true
+	var changed = true
+	controls.addEventListener('change', (function () { changed = true }));
 	function animate() {
-		requestAnimationFrame( animate );
-		renderer.render( scene, camera );
-		//document.querySelector("#objcount").innerText = scene.children.length
+		if (running) requestAnimationFrame( animate );
+		if (changed || true) renderer.render( scene, camera );
+		changed = false
+		document.querySelector("#info_panel").children[0].children[0].innerText = scene.children.length
 	}
 	animate();
-	return renderer.domElement;
+	return {
+		cancel: (function () { running = false; renderer.domElement.remove(); }),
+		scene, renderer, camera,
+		elm: renderer.domElement
+	};
 }

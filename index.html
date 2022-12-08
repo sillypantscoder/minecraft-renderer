@@ -1,22 +1,46 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<script>//window.addEventListener('error', (e) => alert(`${e.message} :${e.lineno}`))</script>
+		<script>window.addEventListener('error', (e) => alert(`${e.message} @ ${e.filename}:${e.lineno}`))</script>
 		<script src="https://threejs.org/build/three.js"></script>
 		<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
+		<!-- Required for exporting: -->
+		<script src="https://threejs.org/examples/js/exporters/GLTFExporter.js"></script>
+		<script src="https://threejs.org/examples/js/exporters/STLExporter.js"></script>
+		<!-- Styles -->
 		<style>
 body {
 	margin: 0;
 }
+aside {
+	position: absolute;
+	top: 0;
+	left: 0;
+	margin: 1em;
+	border-radius: 1em;
+	padding: 1em;
+	background: #fffa;
+	border: 1px solid black;
+}
 		</style>
 	</head>
 	<body>
+		<aside id="info_panel">
+			<div><span>???</span> objects</div>
+			<div><button disabled onclick="download_gltf()">Download as GLTF - doesn't work because of the textures :(</button></div>
+			<div><button onclick="download_stl()">Download as STL</button></div>
+			<div><button onclick="download_png()">Download as PNG</button></div>
+			<!--<div><button onclick="downloadBlob(new Blob([JSON.stringify(window.world)]), 'world.json')">Download as JSON</button></div>
+			<div><button onclick="window.cancel()" style="color: red;">Stop rendering</button></div>
+			<div><button onclick="uploadJSON()">Upload JSON</button></div>-->
+		</aside>
 		<script>
-const world_size = 30
-const logical_height = 4
-const max_height = 20
+const world_size = 33
+const logical_height = 3
+const max_height = 15
 const n_biomes = world_size / 2
 const biome_shift = logical_height * 2
+const water_height = logical_height - 0
 
 const loader = new THREE.TextureLoader();
 const block_grass_materials = [
@@ -39,6 +63,8 @@ const block_dirt_materials = [
 		<script src="worldgen.js"></script>
 		<script src="world_compile.js"></script>
 		<script src="renderer.js"></script>
+		<script src="export3js.js"></script>
+		<script src="uploader.js"></script>
 		<script>
 (() => {
 	return new Promise((resolve) => {
@@ -50,8 +76,13 @@ const block_dirt_materials = [
 		x.send()
 	})
 })().then((textures) => {
-	render(textures, window.world).then((elm) => {
-		document.body.appendChild(elm);
+	window.textures = textures
+	render(textures, window.world).then((i) => {
+		window.cancel = i.cancel
+		window.scene = i.scene
+		window.renderer = i.renderer
+		window.camera = i.camera
+		document.body.appendChild(i.elm);
 	});
 })
 		</script>
