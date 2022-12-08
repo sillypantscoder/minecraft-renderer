@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<script>window.addEventListener('error', (e) => alert(`${e.message} :${e.lineno}`))</script>
+		<script>//window.addEventListener('error', (e) => alert(`${e.message} :${e.lineno}`))</script>
 		<script src="https://threejs.org/build/three.js"></script>
 		<script src="https://threejs.org/examples/js/controls/OrbitControls.js"></script>
 		<style>
@@ -19,7 +19,7 @@ const n_biomes = world_size / 2
 const biome_shift = logical_height * 2
 
 const loader = new THREE.TextureLoader();
-const block_materials = [
+const block_grass_materials = [
 	new THREE.MeshPhongMaterial({map: loader.load('/textures/grass_block_side.png')}),
 	new THREE.MeshPhongMaterial({map: loader.load('/textures/grass_block_side.png')}),
 	new THREE.MeshPhongMaterial({map: loader.load('/textures/grass_block_top.jpeg')}),
@@ -35,120 +35,14 @@ const block_dirt_materials = [
 	new THREE.MeshPhongMaterial({map: loader.load('/textures/dirt.png')}),
 	new THREE.MeshPhongMaterial({map: loader.load('/textures/dirt.png')}),
 ];
-function choice(items) { return items[Math.floor(Math.random()*items.length)]; }
-function generateWorld() {
-	var world = []
-	var biomes = []
-	for (var i = 0; i < n_biomes; i++) {
-		var height = logical_height + (Math.random() * biome_shift) + (biome_shift * -0.5)
-		var x = Math.round(Math.random() * world_size)
-		var y = Math.round(Math.random() * world_size)
-		var biome = {x, y, height: Math.round(height)}
-		biomes.push(biome)
-	}
-	function getNearestBiome(x, y) {
-		var rbiome = logical_height
-		var dist = world_size * world_size
-		for (var i = 0; i < biomes.length; i++) {
-			var dist_x = biomes[i].x - x
-			var dist_y = biomes[i].y - y
-			var dist_n = Math.sqrt((dist_x * dist_x) + (dist_y * dist_y))
-			if (dist_n < dist) {
-				dist = dist_n
-				rbiome = biomes[i].height
-			}
-		}
-		return rbiome
-	}
-	var currentHeight = 5
-	for (var x = 0; x < world_size; x++) {
-		world.push([])
-		for (var y = 0; y < world_size; y++) {
-			var goto = [currentHeight, logical_height, getNearestBiome(x, y)]
-			// Avg with previous blocks
-			if (world[world.length - 1] && world[world.length - 1][y - 1]) goto.push(world[world.length - 1][y - 1])
-			if (world[world.length - 2] && world[world.length - 2][y]) goto.push(world[world.length - 2][y])
-			// Add to world
-			var total = 0
-			for (var i = 0; i < goto.length; i++) total += goto[i]
-			currentHeight = total / goto.length
-			world[world.length - 1].push(currentHeight)
-		}
-	}
-	return world
-}
-function render(world) {
-	const scene = new THREE.Scene();
-	const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
-	const renderer = new THREE.WebGLRenderer();
-	renderer.setSize( window.innerWidth, window.innerHeight );
-	var timeoutDelta = 5
-	var timeout = timeoutDelta
-	//func = funcs[funcs.length - 1]
-	function addCubes() {
-		function func(x, y, z) { return y <= world[x][z] }
-		for (var x = 0; x < world_size; x++) {
-			for (var y = 0; y < max_height; y++) {
-				for (var z = 0; z < world_size; z++) {
-					if (func(x, y, z)) {
-						setTimeout((x, y, z, above) => {
-							var geometry = new THREE.BoxGeometry(1, 1, 1);
-							geometry.translate(x - (world_size / 2), y - (world_size / 2), z - (world_size / 2))
-							var material = block_materials
-							if (above) material = block_dirt_materials
-							var color = 0xFFFFFF
-							// Add cube
-							//var material = new THREE.MeshPhongMaterial({ color: color });
-							var cube = new THREE.Mesh( geometry, material );
-							scene.add( cube );
-							// Add wireframe
-							//var material = new THREE.LineBasicMaterial( { color: 0x000000, linewidth: 2 } );
-							//cube = new THREE.LineSegments( new THREE.EdgesGeometry(geometry), material );
-							//scene.add( cube );
-						}, timeout, x, y, z, func(x, y + 1, z))
-					}
-				}
-				timeout += timeoutDelta
-			}
-		}
-	}
-	addCubes()
-	// Add light
-	var color = 0xFFFFFF;
-	var intensity = 1;
-	var light = new THREE.DirectionalLight(color, intensity);
-	light.position.set(-world_size, 0.5 * world_size, world_size);
-	light.target.position.set(0, 0, 0);
-	scene.add(light);
-	scene.add(light.target);
-
-	// Add more light
-	var color = 0xFFFFFF;
-	var intensity = 0.5;
-	light = new THREE.AmbientLight( color, intensity );
-	scene.add(light);
-
-	camera.position.z = world_size;
-	camera.position.x = -world_size;
-	camera.rotation.y = -45
-	g = addCubes()
-
-	const controls = new THREE.OrbitControls( camera, renderer.domElement );
-
-	//controls.update() must be called after any manual changes to the camera's transform
-	//camera.position.set( 0, 20, 100 );
-	controls.update();
-	//renderer.render( scene, camera );
-	function animate() {
-		requestAnimationFrame( animate );
-		renderer.render( scene, camera );
-		//document.querySelector("#objcount").innerText = scene.children.length
-	}
-	animate();
-	return renderer.domElement;
-}
-document.body.appendChild(render(generateWorld()));
+		</script>
+		<script src="worldgen.js"></script>
+		<script src="world_compile.js"></script>
+		<script src="renderer.js"></script>
+		<script>
+render(window.world).then((elm) => {
+	document.body.appendChild(elm);
+});
 		</script>
 	</body>
 </html>
